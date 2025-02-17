@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tăng cường dữ liệu</title>
+    <style>
+        body {font-family: sans-serif; margin: 20px;}
+        .container {display: flex; gap: 20px;}
+        .options {flex: 1;}
+        .output {flex: 1; }
+        .results {margin-top: 20px;}
+        .result {border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;}
+        .highlight {color: red;}
+    </style>
+    <script>
+        function updateSelectedOptions() {
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked'));
+            const optionNames = [];
+            for (let i = 0; i < selectedOptions.length; i++) {
+                const optionValue = selectedOptions[i].value;
+                let optionName;
+                switch (optionValue) {
+                    case 'back_translation': optionName = "Dịch ngược (EN-VI-EN)"; break;
+                    case 'synonym_replacement': optionName = "Thay thế từ đồng nghĩa"; break;
+                    case 'random_insertion': optionName = "Thêm ngẫu nhiên một số từ"; break;
+                    case 'random_swap': optionName = "Đổi chỗ ngẫu nhiên một số từ"; break;
+                    case 'random_deletion': optionName = "Xóa ngẫu nhiên một số từ"; break;
+                    // Add more cases for other options if needed
+                }
+                optionNames.push(`${i+1}. ${optionName}`);
+
+            }
+            document.getElementById('selected-options-display').innerText = optionNames.join('\n'); // Use newline to separate lines
+
+            const augmentMethodContainer = document.getElementById('augment-method-container');
+            if (selectedOptions.length >= 2) {
+                augmentMethodContainer.style.display = 'block';
+            } else {
+                augmentMethodContainer.style.display = 'none';
+            }
+        }
+        window.onload = updateSelectedOptions;
+    </script>
+</head>
+<body>
+
+<h1>Tăng cường dữ liệu văn bản</h1>
+
+<div class="container">
+    <div class="options">
+        <form method="POST">
+            <textarea name="text" placeholder="Nhập văn bản"></textarea><br>
+            <label><input type="checkbox" name="options" value="back_translation" onclick="updateSelectedOptions()"> Dịch ngược (EN-VI-EN)</label><br>
+            <label><input type="checkbox" name="options" value="synonym_replacement" onclick="updateSelectedOptions()"> Thay thế từ đồng nghĩa</label><br>
+            <label><input type="checkbox" name="options" value="random_insertion" onclick="updateSelectedOptions()"> Thêm ngẫu nhiên một số từ</label><br>
+            <label><input type="checkbox" name="options" value="random_swap" onclick="updateSelectedOptions()"> Đổi chỗ ngẫu nhiên một số từ</label><br>
+            <label><input type="checkbox" name="options" value="random_deletion" onclick="updateSelectedOptions()"> Xóa ngẫu nhiên một số từ</label><br>
+            <div id="augment-method-container" style="display: none;">
+                <label><input type="radio" name="augment_method" value="Tăng cường theo input" checked>Tăng cường theo input</label><br>
+                <label><input type="radio" name="augment_method" value="Tăng cường theo thứ tự">Tăng cường theo thứ tự</label><br>
+            </div>
+    
+            <button type="submit">Tăng cường</button>
+        </form>
+    </div>
+    <div class="output">
+        <h2>Các phương pháp đã chọn:</h2>
+        <p id="selected-options-display"></p> <div style="height:10px;"></div>
+    
+    </div>
+    
+</div>
+
+
+
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <div class="results">
+        {% if results %}
+            <h2>Kết quả:</h2>
+            <p><strong>Văn bản gốc:</strong> {{ original_text }}</p>
+            {% for result in results %}
+                <div class="result">
+                    <p><strong>{{ result.option }}:</strong></p>
+                    <p>{{ result.augmented_text | safe }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+
+</body>
+</html>

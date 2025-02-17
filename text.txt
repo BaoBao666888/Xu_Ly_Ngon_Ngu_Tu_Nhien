@@ -1,0 +1,19 @@
+Văn bản gốc:
+He is a doctor
+
+Kết quả:
+1. Thay thế từ đồng nghĩa:
+Atomic number 2 be a doctor
+
+Kết quả:
+2. Thêm ngẫu nhiên một số từ:
+Atomic number _ be a _
+
+Kết quả:
+3. Đổi chỗ ngẫu nhiên một số từ:
+Number atomic be _ a _
+
+Kết quả:
+4. Xóa ngẫu nhiên một số từ:
+Number atomic _ _
+

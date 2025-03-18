@@ -1,95 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tăng cường dữ liệu</title>
-    <style>
-        body {font-family: sans-serif; margin: 20px;}
-        .container {display: flex; gap: 20px;}
-        .options {flex: 1;}
-        .output {flex: 1; }
-        .results {margin-top: 20px;}
-        .result {border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;}
-        .highlight {color: red;}
-    </style>
-    <script>
-        function updateSelectedOptions() {
-            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked'));
-            const optionNames = [];
-            for (let i = 0; i < selectedOptions.length; i++) {
-                const optionValue = selectedOptions[i].value;
-                let optionName;
-                switch (optionValue) {
-                    case 'back_translation': optionName = "Dịch ngược (EN-VI-EN)"; break;
-                    case 'synonym_replacement': optionName = "Thay thế từ đồng nghĩa"; break;
-                    case 'random_insertion': optionName = "Thêm ngẫu nhiên một số từ"; break;
-                    case 'random_swap': optionName = "Đổi chỗ ngẫu nhiên một số từ"; break;
-                    case 'random_deletion': optionName = "Xóa ngẫu nhiên một số từ"; break;
-                    // Add more cases for other options if needed
-                }
-                optionNames.push(`${i+1}. ${optionName}`);
-
-            }
-            document.getElementById('selected-options-display').innerText = optionNames.join('\n'); // Use newline to separate lines
-
-            const augmentMethodContainer = document.getElementById('augment-method-container');
-            if (selectedOptions.length >= 2) {
-                augmentMethodContainer.style.display = 'block';
-            } else {
-                augmentMethodContainer.style.display = 'none';
-            }
-        }
-        window.onload = updateSelectedOptions;
-    </script>
+    <meta charset="utf-8">
+    <title>Quy trình Thu thập, Tăng cường, Xử lý và Biểu diễn dữ liệu</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-
-<h1>Tăng cường dữ liệu văn bản</h1>
-
-<div class="container">
-    <div class="options">
-        <form method="POST">
-            <textarea name="text" placeholder="Nhập văn bản"></textarea><br>
-            <label><input type="checkbox" name="options" value="back_translation" onclick="updateSelectedOptions()"> Dịch ngược (EN-VI-EN)</label><br>
-            <label><input type="checkbox" name="options" value="synonym_replacement" onclick="updateSelectedOptions()"> Thay thế từ đồng nghĩa</label><br>
-            <label><input type="checkbox" name="options" value="random_insertion" onclick="updateSelectedOptions()"> Thêm ngẫu nhiên một số từ</label><br>
-            <label><input type="checkbox" name="options" value="random_swap" onclick="updateSelectedOptions()"> Đổi chỗ ngẫu nhiên một số từ</label><br>
-            <label><input type="checkbox" name="options" value="random_deletion" onclick="updateSelectedOptions()"> Xóa ngẫu nhiên một số từ</label><br>
-            <div id="augment-method-container" style="display: none;">
-                <label><input type="radio" name="augment_method" value="Tăng cường theo input" checked>Tăng cường theo input</label><br>
-                <label><input type="radio" name="augment_method" value="Tăng cường theo thứ tự">Tăng cường theo thứ tự</label><br>
-            </div>
+    <h1>Quy trình Thu thập, Tăng cường, Xử lý và Biểu diễn dữ liệu</h1>
     
-            <button type="submit">Tăng cường</button>
-        </form>
-    </div>
-    <div class="output">
-        <h2>Các phương pháp đã chọn:</h2>
-        <p id="selected-options-display"></p> <div style="height:10px;"></div>
-    
-    </div>
-    
-</div>
-
-
-
-
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+    <p style="color: red;">{{ error }}</p>
     {% endif %}
 
-    <div class="results">
-        {% if results %}
-            <h2>Kết quả:</h2>
-            <p><strong>Văn bản gốc:</strong> {{ original_text }}</p>
-            {% for result in results %}
-                <div class="result">
-                    <p><strong>{{ result.option }}:</strong></p>
-                    <p>{{ result.augmented_text | safe }}</p>
-                </div>
-            {% endfor %}
-        {% endif %}
+    <div class="step" id="step1">
+        <h2>Bước 1: Thu thập dữ liệu</h2>
+        <form method="POST">
+            <input type="hidden" name="step" value="collection">
+            <label>
+                <input type="radio" name="input_type" value="manual" checked onclick="toggleInputType()"> Nhập văn bản
+            </label>
+            <label>
+                <input type="radio" name="input_type" value="web" onclick="toggleInputType()"> Lấy từ web (Sách)
+            </label>
+            <div id="manual_input" style="margin-top: 10px;">
+                <textarea name="manual_text" rows="5" cols="60" placeholder="Nhập văn bản của bạn..."></textarea>
+            </div>
+            <div id="web_input" style="display: none; margin-top: 10px;">
+                <p>Chọn "Lấy từ web" rồi nhấn Thực thi để tải sách.</p>
+            </div>
+            <br>
+            <button type="submit">Thực thi Bước 1</button>
+        </form>
+        <div id="collection_output">
+            {{ collection_output|safe }}
+        </div>
+        {{ select_paragraph_form|safe }}
     </div>
 
+    <div class="step" id="step2">
+        <h2>Bước 2: Tăng cường dữ liệu</h2>
+        <form method="POST">
+            <input type="hidden" name="step" value="augmentation">
+            <p>Chọn các phương pháp tăng cường (áp dụng theo thứ tự):</p>
+            <label><input type="checkbox" name="augment_options" value="back_translation"> Dịch ngược (EN-FR-EN)</label><br>
+            <label><input type="checkbox" name="augment_options" value="synonym_replacement"> Thay thế từ đồng nghĩa</label><br>
+            <label><input type="checkbox" name="augment_options" value="random_insertion"> Thêm ngẫu nhiên một số từ</label><br>
+            <label><input type="checkbox" name="augment_options" value="random_swap"> Đổi chỗ ngẫu nhiên một số từ</label><br>
+            <label><input type="checkbox" name="augment_options" value="random_deletion"> Xóa ngẫu nhiên một số từ</label><br>
+            <label><input type="checkbox" name="augment_options" value="entity_replacement"> Thay thế thực thể</label><br>
+            <label><input type="checkbox" name="augment_options" value="add_noise"> Thêm nhiễu</label><br>
+            <br>
+            <button type="submit">Thực thi Bước 2</button>
+        </form>
+        <div id="augmentation_output">
+            {{ augmentation_result|safe }}
+        </div>
+    </div>
 
+    <div class="step" id="step3">
+        <h2>Bước 3: Xử lý dữ liệu</h2>
+        <form method="POST">
+            <input type="hidden" name="step" value="processing">
+            <button type="submit">Thực thi Bước 3</button>
+        </form>
+        <div id="processing_output">
+            {{ processing_output|safe }}
+        </div>
+    </div>
+
+    <div class="step" id="step4">
+        <h2>Bước 4: Biểu diễn dữ liệu</h2>
+        <form method="POST">
+            <input type="hidden" name="step" value="representation">
+            <button type="submit">Thực thi Bước 4</button>
+        </form>
+        <div id="representation_output">
+            <p>Chưa làm</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleInputType() {
+            var manual = document.querySelector('input[value="manual"]').checked;
+            document.getElementById('manual_input').style.display = manual ? 'block' : 'none';
+            document.getElementById('web_input').style.display = manual ? 'none' : 'block';
+        }
+    </script>
 </body>
 </html>

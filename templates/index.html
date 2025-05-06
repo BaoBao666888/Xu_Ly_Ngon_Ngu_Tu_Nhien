@@ -20,7 +20,7 @@
                 <input type="radio" name="input_type" value="manual" checked onclick="toggleInputType()"> Nhập văn bản
             </label>
             <label>
-                <input type="radio" name="input_type" value="web" onclick="toggleInputType()"> Lấy từ web (Sách)
+                <input type="radio" name="input_type" value="web" onclick="toggleInputType()"> Lấy từ Sách sherlock.txt
             </label>
             <div id="manual_input" style="margin-top: 10px;">
                 <textarea name="manual_text" rows="5" cols="60" placeholder="Nhập văn bản của bạn..."></textarea>
@@ -61,6 +61,16 @@
         <h2>Bước 3: Xử lý dữ liệu</h2>
         <form method="POST">
             <input type="hidden" name="step" value="processing">
+            <p>Chọn các phương pháp tiền xử lý (áp dụng theo thứ tự):</p>
+            <label><input type="checkbox" name="preprocess_options" value="sentence_tokenization"> Sentence tokenization</label><br>
+            <label><input type="checkbox" name="preprocess_options" value="word_tokenization"> Word tokenization</label><br>
+            <label><input type="checkbox" name="preprocess_options" value="remove_stopwords"> Xóa stop words</label><br>
+            <label><input type="checkbox" name="preprocess_options" value="rm_pun"> Xóa các loại dấu</label><br>
+            <label><input type="checkbox" name="preprocess_options" value="lowercasing"> Viết thường các ký tự</label><br>
+            
+            <label><input type="checkbox" name="preprocess_options" value="fix_abbreviations"> Sửa lại các từ viết tắt, viết sai</label><br>
+            <label><input type="checkbox" name="preprocess_options" value="pos_tagging"> POS tagging</label><br>
+            <br>
             <button type="submit">Thực thi Bước 3</button>
         </form>
         <div id="processing_output">
@@ -72,14 +82,173 @@
         <h2>Bước 4: Biểu diễn dữ liệu</h2>
         <form method="POST">
             <input type="hidden" name="step" value="representation">
+            <p>Chọn các lựa chọn sau:</p>
+    
+            <!-- Basic Vectorization Approaches -->
+            <label>
+                <strong>1. Basic Vectorization Approaches</strong><small> (Các phương pháp vector hóa cơ bản)</small>
+            </label>
+            <ul>
+                <li><input type="checkbox" name="basic_representation" value="one_hot"> One-Hot Encoding</li>
+                <li><input type="checkbox" name="basic_representation" value="bow"> Bag of Words (BoW)</li>
+                <li><input type="checkbox" name="basic_representation" value="ngram"> N-Grams</li>
+                <li><input type="checkbox" name="basic_representation" value="tfidf"> TF-IDF</li>
+            </ul>
+            
+            <!-- Distributed Representations -->
+            <label>
+                <strong>2. Distributed Representations</strong><small> (Biểu diễn phân tán)</small>
+            </label>
+            <ul>
+                <li><input type="checkbox" name="distributed_representation" value="word2vec"> Word2Vec</li>
+                <li><input type="checkbox" name="distributed_representation" value="fasttext"> FastText</li>
+                <li><input type="checkbox" name="distributed_representation" value="glove"> GloVe</li>
+            </ul>
+    
+            <!-- Contextualized Representations -->
+            <label>
+                <strong>3. Contextualized Representation</strong><small> (Biểu diễn ngữ cảnh)</small>
+            </label>
+            <ul>
+                <li><input type="checkbox" name="contextualized_representation" value="elmo"> ELMo</li>
+                <li><input type="checkbox" name="contextualized_representation" value="gpt"> GPT</li>
+                <li><input type="checkbox" name="contextualized_representation" value="bert"> BERT</li>
+            </ul>
+    
+            <br>
             <button type="submit">Thực thi Bước 4</button>
         </form>
+    
         <div id="representation_output">
-            <p>Chưa làm</p>
+            {{ representation_output|safe }}
         </div>
+    </div>
+    
+    <div class="train-dataset" id="step-dataset">
+        <h2>Train Dataset</h2>
+        <label for="dataset-select">Chọn Dataset:</label>
+        <select id="dataset-select">
+            <option value="SST">SST</option>
+            <option value="IMDb">IMDb Review</option>
+            <option value="Yelp">Yelp Review</option>
+            <option value="Amazon">Amazon Review</option>
+            <option value="TREC">TREC</option>
+            <option value="Yahoo">Yahoo! Answers</option>
+            <option value="AG">AG's News</option>
+            <option value="Sogou">Sogou News</option>
+            <option value="DBPedia">DBPedia</option>
+        </select>
+    
+        <label for="model-select">Chọn Mô Hình:</label>
+        <select id="model-select">
+            <option value="knn">KNN</option>
+            <option value="decision_tree">Decision Tree</option>
+        </select>
+    
+        <button onclick="trainModel()">Train</button> <span id="loading-icon" style="display: none;">🔄</span>
+    
+        <h3>Kết Quả:</h3>
+        <button onclick="clearResults()">Xóa Tất Cả</button>
+        <div id="results-container"></div> 
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", loadResults);
+
+        function trainModel() {
+            let dataset = document.getElementById("dataset-select").value;
+            let model = document.getElementById("model-select").value;
+            let loadingIcon = document.getElementById("loading-icon");
+
+            loadingIcon.style.display = "inline-block";
+            loadingIcon.innerHTML = "🔄";
+
+            fetch('/train', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dataset, model })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingIcon.innerHTML = "✔";
+                addResultToUI(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingIcon.innerHTML = "❌";
+            });
+        }
+
+        function loadResults() {
+            fetch('/results')
+            .then(response => response.json())
+            .then(results => {
+                console.log('Dữ liệu results:', results); // Xem dữ liệu từ server
+                document.getElementById("results-container").innerHTML = "";
+                results.forEach((result, index) => {
+                    console.log('result:', result, 'index:', index); // Xem từng cặp result-index
+                    addResultToUI(result, index);
+                });
+            })
+            .catch(error => console.error('Lỗi:', error));
+        }
+
+        
+        function addResultToUI(result, index) {
+            let container = document.getElementById("results-container");
+            let div = document.createElement("div");
+            div.classList.add("result-item");
+
+            let formattedResult = `
+                <strong>Dataset:</strong> ${result.dataset} <br>
+                <strong>Model:</strong> ${result.model} <br>
+                <strong>Accuracy:</strong> ${result.accuracy} <br>
+                <strong>Report:</strong> <pre>${result.report}</pre>
+            `;
+
+            div.innerHTML = `
+                <div class="result-box">${formattedResult}</div>
+                <button onclick="deleteResult(${index})">Xóa</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function deleteResult(index) {
+            console.log('Gửi index:', index);
+            fetch('/delete_result', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index: index })  // Gửi index cần xóa
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Lỗi xóa kết quả: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Kiểm tra xem data.results có tồn tại và là mảng không
+                if (data && Array.isArray(data.results)) {
+                    const container = document.getElementById("results-container");
+                    container.innerHTML = ""; // Xóa UI cũ
+                    data.results.forEach((result, i) => addResultToUI(result, i)); // Render lại toàn bộ
+                } else {
+                    console.warn('Không có kết quả nào để hiển thị sau khi xóa.');
+                    document.getElementById("results-container").innerHTML = "<p>Không còn kết quả nào.</p>";
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                alert('Đã xảy ra lỗi khi xóa kết quả!');
+            });
+        }
+
+
+        function clearResults() {
+            fetch('/clear_results', { method: 'POST' })
+            .then(() => loadResults());
+        }
+
         function toggleInputType() {
             var manual = document.querySelector('input[value="manual"]').checked;
             document.getElementById('manual_input').style.display = manual ? 'block' : 'none';

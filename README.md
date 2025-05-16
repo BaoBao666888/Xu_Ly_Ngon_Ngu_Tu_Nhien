@@ -18,8 +18,8 @@
 ### 1. Clone repo
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/BaoBao666888/Xu_Ly_Ngon_Ngu_Tu_Nhien.git
+cd Xu_Ly_Ngon_Ngu_Tu_Nhien
 ```
 
 ### 2. Cài đặt Python 3.8+ và pip

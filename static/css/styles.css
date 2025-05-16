@@ -1,67 +1,559 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f7fa;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background-color: #f5f5f5;
     margin: 0;
     padding: 20px;
     color: #333;
 }
-h1, h2, h3 {
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
     color: #2c3e50;
 }
-.container {
+.tabs {
     display: flex;
-    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
     flex-wrap: wrap;
+    gap: 5px; /* Reduced gap */
 }
-.card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    flex: 1;
-    min-width: 300px;
-}
-textarea {
-    width: 100%;
-    height: 150px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    resize: vertical;
-}
-input[type="checkbox"], input[type="radio"] {
-    margin-right: 5px;
-}
-button {
-    background: #3498db;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
+.tab-btn {
+    padding: 10px 16px;
+    border: 1px solid transparent; /* For active state */
+    background-color: #3498db;
+    color: white;
+    border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
-button:hover {
-    background: #2980b9;
+.tab-btn:hover {
+    background-color: #2980b9;
 }
-.result {
-    border: 1px solid #eee;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    background: #f9f9f9;
-}
-.output {
-    margin-top: 20px;
-}
-pre {
-    background: #ecf0f1;
-    padding: 10px;
-    border-radius: 4px;
+.tab-btn.active {
+    background-color: #2c3e50;
+    border-bottom: 3px solid #e67e22; /* Example active indicator */
 }
 
-.step {
-    border: 1px solid #ccc;
-    padding: 15px;
-    margin: 15px 0;
+.tab-content {
+    background: white;
+    padding: 25px; /* Increased padding */
+    margin: 0 auto 20px auto; /* Added bottom margin */
+    border-radius: 8px;
+    max-width: 950px; /* Slightly wider */
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Softer shadow */
 }
-.step h2 { margin-top: 0; }
+
+.tab-content h2 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+.tab-content h3 {
+    color: #34495e;
+    margin-top: 25px;
+}
+.tab-content h4 {
+    color: #7f8c8d;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+
+input[type="text"], 
+input[type="file"],
+input[type="number"],
+textarea, 
+select {
+    padding: 10px; /* Increased padding */
+    margin: 8px 0; /* Consistent margin */
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    box-sizing: border-box; /* Important for width calculations */
+    width: 100%; /* Default to full width within container */
+    font-size: 14px;
+}
+textarea {
+    min-height: 80px;
+}
+
+select[multiple] {
+    min-height: 100px;
+}
+
+button {
+    padding: 10px 18px; /* Slightly larger */
+    border: none;
+    background-color: #2ecc71;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px; /* Slightly larger font */
+    transition: background-color 0.3s ease;
+    margin: 5px 2px; /* Add small margin */
+}
+button:hover {
+    background-color: #27ae60;
+}
+button[style*="#e74c3c"] { /* For delete buttons */
+    background-color: #e74c3c;
+}
+button[style*="#e74c3c"]:hover {
+    background-color: #c0392b;
+}
+
+
+pre {
+    background: #ecf0f1;
+    padding: 15px; /* Increased padding */
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9em; /* Slightly smaller for pre content */
+    line-height: 1.6;
+    border: 1px solid #dfe6e9;
+}
+
+/* Input sections for better organization in "Nhập liệu" */
+.input-section {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #dfe6e9;
+}
+.input-section:last-child {
+    border-bottom: none;
+}
+
+
+#chat-log {
+    text-align: left;
+    width: 100%; /* Full width */
+    box-sizing: border-box;
+    margin: 15px auto; /* Centered with margin */
+    background: #f9f9f9; /* Lighter background */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-height: 200px; /* Minimum height */
+    max-height: 400px; /* Max height before scroll */
+    overflow-y: auto;
+    line-height: 1.6;
+}
+#chat-log p {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+#chat-log p strong { /* Bot/User name */
+    color: #3498db;
+}
+/* Styling for user messages */
+#chat-log p:nth-child(odd) { /* Assuming user message comes first if alternating visually */
+    background-color: #e0f7fa; /* Light blue for user (example) */
+    margin-left: auto; /* Align to right */
+    border-bottom-right-radius: 0;
+}
+/* Styling for bot messages */
+#chat-log p:nth-child(even) { /* Bot messages */
+    background-color: #eeeeee; /* Light grey for bot */
+    margin-right: auto; /* Align to left */
+    border-bottom-left-radius: 0;
+}
+
+
+.loader {
+    display: none;
+    border: 4px solid #f3f3f3; /* Light grey */
+    border-top: 4px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 20px; /* Smaller loader */
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle; /* Align with text/buttons */
+    display: inline-block; /* To be controlled by JS */
+    display: none; /* Initially hidden */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+label {
+    margin-right: 10px;
+    margin-bottom: 5px;
+    display: inline-block; /* Better layout for checkboxes */
+    font-weight: 500;
+}
+
+/* Table styling for results */
+.result-table-container {
+    margin-top: 15px;
+    overflow-x: auto; /* Ensure tables are scrollable horizontally */
+}
+.result-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+.result-table-container th, .result-table-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+}
+.result-table-container th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+.result-table-container tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Specific widths for inputs where needed */
+#test-size, #scrape-url {
+    width: auto; /* Override full width for smaller inputs */
+    display: inline-block; /* Allow label and input on same line */
+}
+#scrape-url {
+    width: calc(100% - 120px); /* Adjust based on button size */
+    margin-right: 10px;
+}
+#chat-input {
+     width: calc(100% - 100px); /* Adjust based on button size */
+     margin-right: 10px;
+     display: inline-block;
+}
+
+#column-selection label, #recommend-columns-selection label {
+    display: block; /* Each label on new line */
+    margin-top: 10px;
+}
+#column-selection select, #recommend-columns-selection select {
+    width: 50%; /* Don't take full width */
+    min-width: 200px;
+}
+
+#train-charts img, #compare-result img {
+    max-width: 100%; /* Ensure images are responsive */
+    height: auto;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+#compare-result img {
+    max-width: 48%; /* For side-by-side confusion matrices if space allows */
+    display: inline-block;
+    margin: 1%;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0));
+    margin: 30px 0;
+}
+
+
+/* styles.css */
+
+/* Container chung cho mỗi chatbot UI (Bot mặc định và Gemini Bot) */
+.chatbot-container {
+    margin-bottom: 30px; /* Tăng khoảng cách giữa các chatbot container */
+    padding: 20px; /* Tăng padding bên trong container */
+    border: 1px solid #dfe6e9; /* Màu border nhẹ nhàng hơn */
+    border-radius: 8px;
+    background-color: #f8f9fa; /* Màu nền sáng hơn một chút */
+}
+
+.chatbot-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px; /* Khoảng cách dưới tiêu đề */
+    color: #3498db; /* Màu tiêu đề */
+    border-bottom: 1px solid #e9ecef; /* Đường gạch chân nhẹ hơn */
+    padding-bottom: 10px;
+    font-size: 1.25em; /* Kích thước chữ tiêu đề */
+}
+
+/* Class chung cho khu vực hiển thị log chat */
+.chat-log-area {
+    width: 100%;
+    background: #ffffff; /* Nền trắng cho log */
+    padding: 15px;      /* Padding bên trong khu vực log */
+    border: 1px solid #ced4da; /* Border cho khu vực log */
+    border-radius: 6px;
+    min-height: 250px;  /* Tăng chiều cao tối thiểu */
+    max-height: 400px; /* Chiều cao tối đa trước khi scroll */
+    overflow-y: auto;   /* Scroll khi nội dung vượt quá */
+    line-height: 1.6;   /* Giãn dòng cho dễ đọc */
+    box-sizing: border-box; /* Đảm bảo padding và border không làm tăng kích thước tổng */
+}
+
+/* Tin nhắn chung (áp dụng cho cả user và bot nếu dùng thẻ div) */
+.chat-log-area > div { /* Nhắm vào các div con trực tiếp của .chat-log-area */
+    padding: 10px 15px;
+    border-radius: 18px;    /* Bo tròn bong bóng chat */
+    max-width: 85%;         /* Chiều rộng tối đa của bong bóng */
+    word-wrap: break-word;  /* Tự động xuống dòng chữ dài */
+    clear: both;            /* Quan trọng để các float không chồng chéo */
+    margin-bottom: 10px;     /* Khoảng cách giữa các tin nhắn */
+    position: relative;     /* Cho các định vị con sau này nếu cần */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Thêm bóng đổ nhẹ */
+}
+
+/* Tin nhắn của người dùng (Bạn) */
+.chat-log-area div.user-message {
+    background-color: #dcf8c6; /* Màu xanh lá nhạt */
+    color: #303030;            /* Màu chữ tối hơn một chút cho dễ đọc */
+    float: right;               /* Đẩy sang phải */
+    margin-left: auto;          /* Đảm bảo nó ở bên phải nếu không gian rộng */
+    border-bottom-right-radius: 6px; /* Góc bo đặc trưng */
+}
+
+.chat-log-area div.user-message strong { /* Tên "Bạn:" */
+    color: #075e54;             /* Màu xanh đậm cho tên */
+    font-weight: 600;
+    margin-right: 5px;
+    /* display: block; /* Bỏ display: block để tên và nội dung có thể cùng dòng nếu text ngắn */
+    /* margin-bottom: 3px; */
+}
+
+/* Tin nhắn của Bot (Bot mặc định và Gemini Bot) */
+.chat-log-area div.bot-message {
+    background-color: #e9ecef; /* Màu xám nhạt hiện đại hơn */
+    color: #303030;
+    float: left;                /* Đẩy sang trái */
+    margin-right: auto;         /* Đảm bảo nó ở bên trái */
+    border-bottom-left-radius: 6px; /* Góc bo đặc trưng */
+}
+
+.chat-log-area div.bot-message strong { /* Tên "Bot:" hoặc "Gemini Bot:" */
+    font-weight: 600;
+    margin-right: 5px;
+    display: block;             /* Tên bot luôn ở dòng riêng trên đầu */
+    margin-bottom: 5px;         /* Khoảng cách giữa tên bot và nội dung */
+}
+/* Màu riêng cho tên từng loại bot nếu cần */
+.chat-log-area div.bot-message strong { /* Màu mặc định cho Bot thường */
+    color: #2980b9;
+}
+.chat-log-area div.chat-log-gemini div.bot-message strong { /* Màu cho Gemini Bot (cần class .chat-log-gemini ở div cha) */
+    color: #c7254e; /* Màu hồng đậm hơn một chút */
+}
+
+
+/* --- Style cho các thẻ HTML được tạo bởi marked.js BÊN TRONG div.bot-message --- */
+.chat-log-area div.bot-message p,
+.chat-log-area div.bot-message ol,
+.chat-log-area div.bot-message ul,
+.chat-log-area div.bot-message pre,
+.chat-log-area div.bot-message blockquote,
+.chat-log-area div.bot-message h1, /* Thêm các thẻ heading nếu Gemini có thể tạo ra */
+.chat-log-area div.bot-message h2,
+.chat-log-area div.bot-message h3,
+.chat-log-area div.bot-message h4,
+.chat-log-area div.bot-message h5,
+.chat-log-area div.bot-message h6,
+.chat-log-area div.bot-message table /* Thêm table nếu có */
+ {
+    margin-top: 0;
+    margin-bottom: 0.75em; /* Khoảng cách chuẩn giữa các block */
+    line-height: 1.5;      /* Giãn dòng riêng cho nội dung markdown nếu cần */
+}
+/* Bỏ margin bottom cho phần tử cuối cùng bên trong bong bóng chat của bot */
+.chat-log-area div.bot-message > *:last-child {
+    margin-bottom: 0;
+}
+
+.chat-log-area div.bot-message ol,
+.chat-log-area div.bot-message ul {
+    padding-left: 25px; /* Thụt lề cho danh sách rõ ràng hơn */
+}
+.chat-log-area div.bot-message li {
+    margin-bottom: 0.25em; /* Khoảng cách nhỏ giữa các item trong list */
+}
+
+.chat-log-area div.bot-message pre {
+    background-color: #2d2d2d; /* Nền tối cho khối code */
+    color: #f8f8f2;           /* Chữ sáng */
+    padding: 12px;
+    border-radius: 5px;
+    overflow-x: auto;
+    border: 1px solid #444;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+.chat-log-area div.bot-message code { /* Mã inline */
+    background-color: #f0f2f5; /* Nền sáng hơn một chút cho mã inline */
+    color: #c7254e;            /* Màu chữ cho mã inline */
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+/* Reset style cho code bên trong pre */
+.chat-log-area div.bot-message pre code {
+    padding: 0;
+    background-color: transparent;
+    color: inherit; /* Kế thừa màu từ pre */
+    border-radius: 0;
+    font-size: 1em; /* Kích thước bằng pre */
+}
+
+.chat-log-area div.bot-message blockquote {
+    border-left: 4px solid #007bff; /* Màu border trích dẫn nổi bật hơn */
+    padding: 10px 15px;
+    margin-left: 0;
+    background-color: #f8f9fa;
+    color: #525252;
+    font-style: italic;
+}
+.chat-log-area div.bot-message blockquote p { /* Style cho <p> bên trong blockquote */
+    margin-bottom: 0.5em;
+}
+.chat-log-area div.bot-message blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-log-area div.bot-message hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 1em 0;
+}
+
+.chat-log-area div.bot-message table {
+    width: auto; /* Hoặc 100% nếu muốn bảng chiếm hết chiều rộng bong bóng */
+    border-collapse: collapse;
+    margin-bottom: 1em;
+}
+.chat-log-area div.bot-message th,
+.chat-log-area div.bot-message td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+}
+.chat-log-area div.bot-message th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+
+/* Clearfix cho float trong chat log */
+.chat-log-area::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Khu vực nhập liệu (giữ nguyên hoặc tùy chỉnh thêm) */
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    margin-top: 15px; /* Tăng khoảng cách với log chat */
+}
+
+.chat-input-area input[type="text"] {
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 12px; /* Tăng padding cho input */
+    font-size: 1em; /* Kích thước chữ input */
+}
+
+.chat-input-area button {
+    flex-shrink: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 12px 20px; /* Tăng padding cho button */
+    font-size: 1em;
+}
+
+
+.typing-indicator-container {
+    clear: both; /* Đảm bảo nó không bị ảnh hưởng bởi float của các tin nhắn khác */
+    overflow: hidden; /* Chứa các float bên trong nếu có */
+    width: 100%; /* Chiếm toàn bộ chiều rộng để dễ căn chỉnh indicator */
+}
+
+.bot-message.typing-indicator {
+    background-color: #e9ecef; /* Giống màu nền của bot message */
+    color: #303030;
+    float: left;
+    margin-right: auto;
+    border-bottom-left-radius: 6px;
+    padding: 10px 15px; /* Giống padding của bot message */
+    max-width: fit-content; /* Chỉ rộng vừa đủ cho nội dung */
+    margin-bottom: 10px; /* Giống margin của bot message */
+    display: flex; /* Để căn chỉnh tên bot và dấu chấm */
+    align-items: center; /* Căn giữa theo chiều dọc */
+}
+
+.bot-message.typing-indicator strong {
+    display: inline; /* Cho phép tên bot và dấu chấm cùng dòng */
+    margin-right: 8px; /* Khoảng cách giữa tên bot và animation */
+    margin-bottom: 0; /* Bỏ margin bottom của strong */
+}
+
+/* Dot Flashing Animation (3 dots) */
+.dot-flashing {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff; /* Màu chấm (có thể đổi) */
+  color: #9880ff;
+  animation: dotFlashing 1s infinite linear alternate;
+  animation-delay: .5s;
+  display: inline-block; /* Để có thể đặt cạnh chữ */
+  vertical-align: middle;
+}
+
+.dot-flashing::before, .dot-flashing::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  top: 0;
+}
+
+.dot-flashing::before {
+  left: -15px; /* Khoảng cách chấm thứ nhất */
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff;
+  color: #9880ff;
+  animation: dotFlashing 1s infinite alternate;
+  animation-delay: 0s;
+}
+
+.dot-flashing::after {
+  left: 15px; /* Khoảng cách chấm thứ ba */
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff;
+  color: #9880ff;
+  animation: dotFlashing 1s infinite alternate;
+  animation-delay: 1s;
+}
+
+@keyframes dotFlashing {
+  0% {
+    background-color: #9880ff;
+  }
+  50%,
+  100% {
+    background-color: #cfc5ff; /* Màu nhạt hơn khi flash */
+  }
+}
+
+/* CSS để ẩn/hiện typing indicator (nếu muốn dùng class thay vì style inline)
+.typing-indicator.hidden {
+    display: none;
+}
+*/

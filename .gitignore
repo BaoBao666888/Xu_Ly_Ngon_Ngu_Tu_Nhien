@@ -1,0 +1,8 @@
+.env
+flask-session/
+uploads/
+models/
+__pycache__/
+charts/
+*.pyc
+*.log

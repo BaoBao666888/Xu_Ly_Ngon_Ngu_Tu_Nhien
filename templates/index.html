@@ -1,259 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <meta charset="utf-8">
-    <title>Quy trình Thu thập, Tăng cường, Xử lý và Biểu diễn dữ liệu</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP WebApp Pro 🌐</title>
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <h1>Quy trình Thu thập, Tăng cường, Xử lý và Biểu diễn dữ liệu</h1>
-    
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
+    <h1>NLP WebApp Pro 🌐</h1>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('input', this)">📥 Nhập liệu</button>
+        <button class="tab-btn" onclick="showTab('augment', this)">🔁 Tăng cường</button>
+        <button class="tab-btn" onclick="showTab('preprocess', this)">🧹 Xử lý</button>
+        <button class="tab-btn" onclick="showTab('vector', this)">📊 Biểu diễn</button>
+        <button class="tab-btn" onclick="showTab('train', this)">🧠 Train</button>
+        <button class="tab-btn" onclick="showTab('recommend', this)">🎯 Gợi ý sản phẩm</button>
+        <button class="tab-btn" onclick="showTab('chatbot', this)">💬 Chatbot</button>
+    </div>
 
-    <div class="step" id="step1">
-        <h2>Bước 1: Thu thập dữ liệu</h2>
-        <form method="POST">
-            <input type="hidden" name="step" value="collection">
-            <label>
-                <input type="radio" name="input_type" value="manual" checked onclick="toggleInputType()"> Nhập văn bản
-            </label>
-            <label>
-                <input type="radio" name="input_type" value="web" onclick="toggleInputType()"> Lấy từ Sách sherlock.txt
-            </label>
-            <div id="manual_input" style="margin-top: 10px;">
-                <textarea name="manual_text" rows="5" cols="60" placeholder="Nhập văn bản của bạn..."></textarea>
+    <!-- Tab: Nhập liệu -->
+    <div id="input" class="tab-content">
+        <h2>📥 Nhập liệu</h2>
+        <div class="input-section">
+            <h4>Văn bản thủ công:</h4>
+            <textarea id="manualText" rows="5" cols="80" placeholder="Nhập văn bản..."></textarea>
+        </div>
+        <div class="input-section">
+            <h4>Tải file TXT:</h4>
+            <input type="file" id="fileTxt" accept=".txt" onchange="loadTxtFile(event)"><br><br>
+        </div>
+        <div class="input-section">
+            <h4>Tải file CSV:</h4>
+            <input type="file" id="csvInput" accept=".csv">
+            <button onclick="withLoading('loader-csv', uploadCSV)">Tải CSV</button>
+            <div id="loader-csv" class="loader"></div>
+            <div id="column-selection" style="display:none; margin-top:10px;">
+                <label>Cột Văn bản:</label>
+                <select id="text-column"></select>
+                <label>Cột Nhãn:</label>
+                <select id="label-column"></select>
+                <button onclick="selectCSVColumns()">Chọn cột & Tiếp tục</button>
             </div>
-            <div id="web_input" style="display: none; margin-top: 10px;">
-                <p>Chọn "Lấy từ web" rồi nhấn Thực thi để tải sách.</p>
-            </div>
-            <br>
-            <button type="submit">Thực thi Bước 1</button>
-        </form>
-        <div id="collection_output">
-            {{ collection_output|safe }}
+            <div id="csv-sample-display" style="margin-top:10px;"></div>
         </div>
-        {{ select_paragraph_form|safe }}
-    </div>
-
-    <div class="step" id="step2">
-        <h2>Bước 2: Tăng cường dữ liệu</h2>
-        <form method="POST">
-            <input type="hidden" name="step" value="augmentation">
-            <p>Chọn các phương pháp tăng cường (áp dụng theo thứ tự):</p>
-            <label><input type="checkbox" name="augment_options" value="back_translation"> Dịch ngược (EN-FR-EN)</label><br>
-            <label><input type="checkbox" name="augment_options" value="synonym_replacement"> Thay thế từ đồng nghĩa</label><br>
-            <label><input type="checkbox" name="augment_options" value="random_insertion"> Thêm ngẫu nhiên một số từ</label><br>
-            <label><input type="checkbox" name="augment_options" value="random_swap"> Đổi chỗ ngẫu nhiên một số từ</label><br>
-            <label><input type="checkbox" name="augment_options" value="random_deletion"> Xóa ngẫu nhiên một số từ</label><br>
-            <label><input type="checkbox" name="augment_options" value="entity_replacement"> Thay thế thực thể</label><br>
-            <label><input type="checkbox" name="augment_options" value="add_noise"> Thêm nhiễu</label><br>
-            <br>
-            <button type="submit">Thực thi Bước 2</button>
-        </form>
-        <div id="augmentation_output">
-            {{ augmentation_result|safe }}
+        <div class="input-section">
+            <h4>Cào dữ liệu từ Web:</h4>
+            <input type="text" id="scrape-url" placeholder="Nhập URL..." style="width: 60%;">
+            <button onclick="withLoading('loader-scrape', doScrape)">Cào Web</button>
+            <div id="loader-scrape" class="loader"></div>
+            <p><em>(Văn bản cào được sẽ được thêm vào ô "Văn bản thủ công")</em></p>
         </div>
     </div>
 
-    <div class="step" id="step3">
-        <h2>Bước 3: Xử lý dữ liệu</h2>
-        <form method="POST">
-            <input type="hidden" name="step" value="processing">
-            <p>Chọn các phương pháp tiền xử lý (áp dụng theo thứ tự):</p>
-            <label><input type="checkbox" name="preprocess_options" value="sentence_tokenization"> Sentence tokenization</label><br>
-            <label><input type="checkbox" name="preprocess_options" value="word_tokenization"> Word tokenization</label><br>
-            <label><input type="checkbox" name="preprocess_options" value="remove_stopwords"> Xóa stop words</label><br>
-            <label><input type="checkbox" name="preprocess_options" value="rm_pun"> Xóa các loại dấu</label><br>
-            <label><input type="checkbox" name="preprocess_options" value="lowercasing"> Viết thường các ký tự</label><br>
-            
-            <label><input type="checkbox" name="preprocess_options" value="fix_abbreviations"> Sửa lại các từ viết tắt, viết sai</label><br>
-            <label><input type="checkbox" name="preprocess_options" value="pos_tagging"> POS tagging</label><br>
-            <br>
-            <button type="submit">Thực thi Bước 3</button>
-        </form>
-        <div id="processing_output">
-            {{ processing_output|safe }}
+    <!-- Tab: Tăng cường -->
+    <div id="augment" class="tab-content" style="display:none;">
+        <h2>🔁 Tăng cường dữ liệu</h2>
+        <p><em>Sử dụng văn bản từ tab "Nhập liệu" hoặc dữ liệu CSV đã chọn.</em></p>
+        <label><input type="checkbox" value="back_translation"> Dịch ngược</label>
+        <label><input type="checkbox" value="synonym_replacement"> Đồng nghĩa</label>
+        <label><input type="checkbox" value="random_insertion"> Thêm từ</label>
+        <label><input type="checkbox" value="random_swap"> Đổi chỗ</label>
+        <label><input type="checkbox" value="random_deletion"> Xoá từ</label>
+        <label><input type="checkbox" value="entity_replacement"> Thực thể</label>
+        <label><input type="checkbox" value="add_noise"> Nhiễu ký tự</label><br><br>
+        <button onclick="withLoading('loader-augment-manual', applyAugmentManual)">Tăng cường Manual</button>
+        <button onclick="withLoading('loader-augment-csv', applyAugmentCSV)">Tăng cường CSV</button>
+        <div id="loader-augment-manual" class="loader"></div>
+        <div id="loader-augment-csv" class="loader"></div>
+        <div id="augmented-result" class="result-table-container" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Tab: Tiền xử lý -->
+    <div id="preprocess" class="tab-content" style="display:none;">
+        <h2>🧹 Tiền xử lý</h2>
+        <p><em>Sử dụng văn bản từ tab "Nhập liệu" hoặc dữ liệu CSV đã chọn.</em></p>
+        <label><input type="checkbox" value="sentence_tokenization"> Sentence tokenization</label>
+        <label><input type="checkbox" value="word_tokenization"> Word tokenization</label>
+        <label><input type="checkbox" value="remove_stopwords"> Xoá stop words</label>
+        <label><input type="checkbox" value="rm_pun"> Xoá dấu câu</label>
+        <label><input type="checkbox" value="lowercasing"> Viết thường</label>
+        <label><input type="checkbox" value="fix_abbreviations"> Sửa viết tắt</label><br><br>
+        <button onclick="withLoading('loader-preprocess-manual', applyPreprocessManual)">Xử lý Manual</button>
+        <button onclick="withLoading('loader-preprocess-csv', applyPreprocessCSV)">Xử lý CSV</button>
+        <div id="loader-preprocess-manual" class="loader"></div>
+        <div id="loader-preprocess-csv" class="loader"></div>
+        <div id="preprocess-result-container" class="result-table-container">
+             <pre id="preprocess-result"></pre>
         </div>
     </div>
 
-    <div class="step" id="step4">
-        <h2>Bước 4: Biểu diễn dữ liệu</h2>
-        <form method="POST">
-            <input type="hidden" name="step" value="representation">
-            <p>Chọn các lựa chọn sau:</p>
-    
-            <!-- Basic Vectorization Approaches -->
-            <label>
-                <strong>1. Basic Vectorization Approaches</strong><small> (Các phương pháp vector hóa cơ bản)</small>
-            </label>
-            <ul>
-                <li><input type="checkbox" name="basic_representation" value="one_hot"> One-Hot Encoding</li>
-                <li><input type="checkbox" name="basic_representation" value="bow"> Bag of Words (BoW)</li>
-                <li><input type="checkbox" name="basic_representation" value="ngram"> N-Grams</li>
-                <li><input type="checkbox" name="basic_representation" value="tfidf"> TF-IDF</li>
-            </ul>
-            
-            <!-- Distributed Representations -->
-            <label>
-                <strong>2. Distributed Representations</strong><small> (Biểu diễn phân tán)</small>
-            </label>
-            <ul>
-                <li><input type="checkbox" name="distributed_representation" value="word2vec"> Word2Vec</li>
-                <li><input type="checkbox" name="distributed_representation" value="fasttext"> FastText</li>
-                <li><input type="checkbox" name="distributed_representation" value="glove"> GloVe</li>
-            </ul>
-    
-            <!-- Contextualized Representations -->
-            <label>
-                <strong>3. Contextualized Representation</strong><small> (Biểu diễn ngữ cảnh)</small>
-            </label>
-            <ul>
-                <li><input type="checkbox" name="contextualized_representation" value="elmo"> ELMo</li>
-                <li><input type="checkbox" name="contextualized_representation" value="gpt"> GPT</li>
-                <li><input type="checkbox" name="contextualized_representation" value="bert"> BERT</li>
-            </ul>
-    
-            <br>
-            <button type="submit">Thực thi Bước 4</button>
-        </form>
-    
-        <div id="representation_output">
-            {{ representation_output|safe }}
-        </div>
+    <!-- Tab: Biểu diễn dữ liệu -->
+    <div id="vector" class="tab-content" style="display:none;">
+        <h2>📊 Biểu diễn dữ liệu</h2>
+        <!-- THAY ĐỔI Ở ĐÂY: bỏ "multiple" -->
+        <p><strong>Chọn phương pháp vector hóa:</strong> (Sẽ được dùng để Train nếu là dữ liệu CSV)</p>
+        <select id="vector-method">
+            <option value="tfidf" selected>TF-IDF</option>
+            <option value="bow">BoW</option>
+            <option value="one_hot">One-hot</option>
+            <option value="ngram">N-Gram</option>
+            <option value="word2vec">Word2Vec</option>
+            <option value="fasttext">FastText</option>
+            <option value="bert">BERT</option>
+            <option value="gpt2">GPT-2</option>
+            <option value="elmo">ELMo</option>
+            <option value="glove">GloVe</option>
+        </select><br><br>
+        <button onclick="withLoading('loader-vector-manual', applyVectorizeManual)">Vector hoá Manual</button>
+        <button onclick="withLoading('loader-vector-csv', applyVectorizeCSV)">Vector hoá CSV</button>
+        <div id="loader-vector-manual" class="loader"></div>
+        <div id="loader-vector-csv" class="loader"></div>
+        <div id="vector-result-manual" class="result-table-container"></div>
+        <div id="csv-vector-info" style="margin-top:10px;"></div>
+        <div id="csv-vector-samples" class="result-table-container" style="margin-top:10px;"></div>
     </div>
-    
-    <div class="train-dataset" id="step-dataset">
-        <h2>Train Dataset</h2>
-        <label for="dataset-select">Chọn Dataset:</label>
-        <select id="dataset-select">
-            <option value="SST">SST</option>
-            <option value="IMDb">IMDb Review</option>
-            <option value="Yelp">Yelp Review</option>
-            <option value="Amazon">Amazon Review</option>
-            <option value="TREC">TREC</option>
-            <option value="Yahoo">Yahoo! Answers</option>
-            <option value="AG">AG's News</option>
-            <option value="Sogou">Sogou News</option>
-            <option value="DBPedia">DBPedia</option>
-        </select>
-    
-        <label for="model-select">Chọn Mô Hình:</label>
-        <select id="model-select">
+
+    <!-- Tab: Huấn luyện mô hình -->
+    <div id="train" class="tab-content" style="display:none;">
+        <h2>🧠 Huấn luyện mô hình</h2>
+        <p><em>Sử dụng dữ liệu CSV đã được Vector hoá (từ phương pháp đầu tiên được chọn ở tab Biểu diễn).</em></p>
+        <label>Chọn mô hình:</label>
+        <select id="model-type" onchange="updateModelParams()">
+            <option value="nb">Naive Bayes</option>
+            <option value="logistic">Logistic Regression</option>
+            <option value="svm">SVM</option>
             <option value="knn">KNN</option>
-            <option value="decision_tree">Decision Tree</option>
+            <option value="tree">Decision Tree</option>
+            <option value="rf">Random Forest</option>
+            <option value="gb">Gradient Boosting</option> 
         </select>
-    
-        <button onclick="trainModel()">Train</button> <span id="loading-icon" style="display: none;">🔄</span>
-    
-        <h3>Kết Quả:</h3>
-        <button onclick="clearResults()">Xóa Tất Cả</button>
-        <div id="results-container"></div> 
+        <label>Tỷ lệ Test Size (0.1-0.5):</label>
+        <input type="number" id="test-size" value="0.2" min="0.1" max="0.5" step="0.05" style="width: 80px;">
+        <div id="model-params"></div>
+        <button onclick="withLoading('loader-train', trainFromCSV)">Train từ CSV</button>
+        <div id="loader-train" class="loader"></div>
+        <div id="train-result-display" style="margin-top:10px;">
+            <h4>Kết quả huấn luyện:</h4>
+            <pre id="train-result-text"></pre>
+            <div id="train-charts"></div>
+        </div>
+        
+        <hr>
+        <h3>Lưu và So sánh Mô hình</h3>
+        <input type="text" id="save-model-name" placeholder="Đặt tên cho model này...">
+        <button onclick="saveTrainedModel()">Lưu Model Vừa Train</button>
+        <br><br>
+        <button onclick="withLoading('loader-compare', generateComparisonsUI)">Hiện So Sánh Các Model Đã Lưu</button>
+        <div id="loader-compare" class="loader"></div>
+        <div id="compare-result" style="margin-top:10px;"></div>
+        <button onclick="clearAllChartsAndSavedModels()" style="background-color: #e74c3c;">Xoá Tất Cả Model Đã Lưu & Biểu Đồ</button>
+        
+        <hr>
+        <h3>Kiểm tra Model Đã Lưu</h3>
+        <label>Chọn model đã lưu:</label>
+        <select id="select-test-model"></select><br>
+        <textarea id="test-input-text" rows="3" cols="70" placeholder="Nhập văn bản để kiểm tra..."></textarea><br>
+        <button onclick="predictWithSelectedModel()">Dự đoán</button>
+        <div id="test-predict-result" style="margin-top:10px;"></div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", loadResults);
-
-        function trainModel() {
-            let dataset = document.getElementById("dataset-select").value;
-            let model = document.getElementById("model-select").value;
-            let loadingIcon = document.getElementById("loading-icon");
-
-            loadingIcon.style.display = "inline-block";
-            loadingIcon.innerHTML = "🔄";
-
-            fetch('/train', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dataset, model })
-            })
-            .then(response => response.json())
-            .then(data => {
-                loadingIcon.innerHTML = "✔";
-                addResultToUI(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                loadingIcon.innerHTML = "❌";
-            });
-        }
-
-        function loadResults() {
-            fetch('/results')
-            .then(response => response.json())
-            .then(results => {
-                console.log('Dữ liệu results:', results); // Xem dữ liệu từ server
-                document.getElementById("results-container").innerHTML = "";
-                results.forEach((result, index) => {
-                    console.log('result:', result, 'index:', index); // Xem từng cặp result-index
-                    addResultToUI(result, index);
-                });
-            })
-            .catch(error => console.error('Lỗi:', error));
-        }
-
+    <!-- Tab: Gợi ý sản phẩm -->
+    <div id="recommend" class="tab-content" style="display:none;">
+        <h2>🎯 Gợi ý sản phẩm (Sử dụng SVD)</h2>
+        <h4>1. Tải Dataset Sản phẩm (CSV)</h4>
+        <input type="file" id="recommendCsvInput" accept=".csv">
+        <button onclick="withLoading('loader-rec-upload', uploadRecommendationCSV)">Tải Dataset</button>
+        <div id="loader-rec-upload" class="loader"></div>
+        <div id="recommend-columns-selection" style="margin-top:10px; display:none;">
+            <label>Cột Mô tả sản phẩm (Keyword):</label>
+            <select id="rec-keyword-col"></select><br>
+            <label>Cột Tên/ID Sản phẩm:</label>
+            <select id="rec-product-id-col"></select><br>
+            <button onclick="selectRecommendColumns()">Xác nhận cột</button>
+        </div>
         
-        function addResultToUI(result, index) {
-            let container = document.getElementById("results-container");
-            let div = document.createElement("div");
-            div.classList.add("result-item");
+        <div id="recommend-train-section" style="display:none;">
+            <h4>2. Huấn luyện mô hình SVD</h4>
+            <button onclick="withLoading('loader-rec-train', trainRecommendSVD)">Train SVD</button>
+            <div id="loader-rec-train" class="loader"></div>
+            <p id="svd-train-status"></p>
+        </div>
 
-            let formattedResult = `
-                <strong>Dataset:</strong> ${result.dataset} <br>
-                <strong>Model:</strong> ${result.model} <br>
-                <strong>Accuracy:</strong> ${result.accuracy} <br>
-                <strong>Report:</strong> <pre>${result.report}</pre>
-            `;
+        <div id="recommend-query-section" style="display:none;">
+            <h4>3. Nhập mô tả để tìm sản phẩm gợi ý</h4>
+            <textarea id="recommend-text-query" rows="3" cols="70" placeholder="Ví dụ: điện thoại màn hình lớn, pin trâu..."></textarea><br>
+            <button onclick="withLoading('loader-rec-get', getProductRecommendations)">Gợi ý ngay</button>
+            <div id="loader-rec-get" class="loader"></div>
+            <div id="recommend-result-display" style="margin-top:10px;"></div>
+        </div>
+    </div>
 
-            div.innerHTML = `
-                <div class="result-box">${formattedResult}</div>
-                <button onclick="deleteResult(${index})">Xóa</button>
-            `;
-            container.appendChild(div);
-        }
+    <!-- Tab: Chatbot -->
+    <div id="chatbot" class="tab-content" style="display:none;">
+        <h2>💬 Chatbots</h2>
+        <div class="chatbot-container"> <!-- Bọc mỗi chatbot trong một container -->
+            <h3>🤖 Chatbot Mặc định</h3>
+            <div id="chat-log" class="chat-log-area">
+                <div class="bot-message"><strong>Bot:</strong> Chào bạn! Bạn muốn hỏi gì về NLP hoặc ứng dụng này không?</div>
+                <!-- Placeholder cho typing indicator của Bot Mặc định -->
+                <div class="typing-indicator-container" id="default-bot-typing-indicator" style="display: none;">
+                    <div class="bot-message typing-indicator">
+                        <strong>Bot:</strong>
+                        <div class="dot-flashing"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Hỏi Bot mặc định..." style="width:calc(80% - 70px);">
+                <button onclick="sendChatMessage()">Gửi</button>
+            </div>
+        </div>
 
-        function deleteResult(index) {
-            console.log('Gửi index:', index);
-            fetch('/delete_result', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ index: index })  // Gửi index cần xóa
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Lỗi xóa kết quả: ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Kiểm tra xem data.results có tồn tại và là mảng không
-                if (data && Array.isArray(data.results)) {
-                    const container = document.getElementById("results-container");
-                    container.innerHTML = ""; // Xóa UI cũ
-                    data.results.forEach((result, i) => addResultToUI(result, i)); // Render lại toàn bộ
-                } else {
-                    console.warn('Không có kết quả nào để hiển thị sau khi xóa.');
-                    document.getElementById("results-container").innerHTML = "<p>Không còn kết quả nào.</p>";
-                }
-            })
-            .catch(error => {
-                console.error('Lỗi:', error);
-                alert('Đã xảy ra lỗi khi xóa kết quả!');
-            });
-        }
+        <hr style="margin: 30px 0;">
 
+        <div class="chatbot-container">
+            <h3>✨ Gemini Chatbot</h3>
+            <div id="gemini-chat-log" class="chat-log-area chat-log-gemini">
+                <div class="bot-message">
+                    <strong>Gemini Bot:</strong> Xin chào, tôi là Gemini! Bạn muốn hỏi gì?
+                </div>
+                <!-- Placeholder cho typing indicator của Gemini Bot -->
+                <div class="typing-indicator-container" id="gemini-bot-typing-indicator" style="display: none;">
+                    <div class="bot-message typing-indicator">
+                        <strong>Gemini Bot:</strong>
+                        <div class="dot-flashing"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="gemini-chat-input" placeholder="Hỏi Gemini..." style="width:calc(80% - 70px);">
+                <button onclick="sendGeminiChatMessage()">Gửi cho Gemini</button>
+            </div>
+        </div>
+    </div>
 
-        function clearResults() {
-            fetch('/clear_results', { method: 'POST' })
-            .then(() => loadResults());
-        }
-
-        function toggleInputType() {
-            var manual = document.querySelector('input[value="manual"]').checked;
-            document.getElementById('manual_input').style.display = manual ? 'block' : 'none';
-            document.getElementById('web_input').style.display = manual ? 'none' : 'block';
-        }
-    </script>
+    <script src="/static/js/marked.min.js"></script>
+    <script src="/static/js/webapp.js"></script>
 </body>
 </html>
